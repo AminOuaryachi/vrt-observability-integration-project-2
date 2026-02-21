@@ -1,0 +1,63 @@
+# ===== AWS =====
+.aws/
+*.pem
+*.key
+aws-credentials*
+credentials
+config
+
+# ===== Environment variables =====
+.env
+.env.*
+!.env.example
+
+# ===== Docker =====
+docker-compose.override.yml
+
+# ===== Logs =====
+*.log
+logs/
+
+# ===== OS files =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== IDE =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ===== Node =====
+node_modules/
+package-lock.json
+
+# ===== Python =====
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# ===== Terraform =====
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+
+# ===== Temp =====
+tmp/
+temp/
+*.tmp
+
+# ===== Claude/Skills =====
+.agents/
+.claude/
+skills-lock.json
+
+# ===== Notes personnelles =====
+ProjetVRT_Explication.md
+ProjetVRT_Uitleg_NL.md
+Transcription.md
+Trello_Kaarten_NL.md
