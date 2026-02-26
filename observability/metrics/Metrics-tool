@@ -1,0 +1,200 @@
+# Metrics-pijler 
+
+## 1. Doel van Metrics binnen het Project
+
+Metrics geven numerieke informatie over de prestaties en gezondheid van een systeem. In tegenstelling tot logging (wat er gebeurd is), tonen metrics hoe het systeem zich gedraagt in de tijd.
+
+Binnen dit project dienen metrics om:
+
+- De beschikbaarheid van services te monitoren (UP/DOWN)
+- Resourceverbruik te meten (CPU, RAM, netwerk)
+- Responstijden te analyseren
+- Foutpercentages te meten
+- Alerts te genereren bij afwijkingen
+
+Metrics beantwoorden vooral de vraag:
+**Is er een probleem?**
+
+---
+
+# 2. Onderzochte Metrics Tools
+
+Voor de metrics-pijler werden drie oplossingen onderzocht:
+
+1. AWS CloudWatch Metrics
+2. Prometheus
+3. Datadog
+
+Elke tool werd beoordeeld op:
+
+- Kosten
+- Complexiteit
+- Integratie
+- Schaalbaarheid
+- Industriestandaard
+
+---
+
+# 3. AWS CloudWatch Metrics
+
+## Beschrijving
+
+AWS CloudWatch Metrics is een beheerde monitoringdienst binnen AWS. EC2-instanties, containers en andere AWS-diensten sturen automatisch metrics naar CloudWatch.
+
+---
+
+## Architectuur
+
+EC2 / Container  
+→ CloudWatch Agent  
+→ CloudWatch Metrics  
+→ AWS Console  
+
+---
+
+## Voordelen
+
+- Geen eigen infrastructuur nodig
+- Automatische integratie met AWS
+- Eenvoudige configuratie
+- Directe alertmogelijkheden
+
+---
+
+## Nadelen
+
+- Gebruikskosten afhankelijk van aantal metrics
+- Vendor lock-in binnen AWS
+- Minder flexibiliteit buiten AWS-ecosysteem
+- Minder overdraagbare kennis
+
+---
+
+## Evaluatie
+
+CloudWatch Metrics is eenvoudig te implementeren, maar beperkt zich tot het AWS-ecosysteem en werkt met een gebruiksgebaseerd kostenmodel.
+
+---
+
+# 4. Datadog
+
+## Beschrijving
+
+Datadog is een commerciële monitoringoplossing (SaaS) die metrics, logs en tracing combineert in één platform.
+
+---
+
+## Voordelen
+
+- Zeer uitgebreide dashboards
+- Sterke alerting
+- Alles-in-één oplossing
+- Gebruiksvriendelijk
+
+---
+
+## Nadelen
+
+- Betalend (na proefperiode)
+- Vendor lock-in
+- Minder geschikt voor educatief open source project
+- Minder controle over backend
+
+---
+
+## Evaluatie
+
+Hoewel Datadog krachtig is, past een commerciële SaaS-oplossing minder goed binnen de leerdoelstellingen van dit project.
+
+---
+
+# 5. Prometheus
+
+## Beschrijving
+
+Prometheus is een open source monitoringtool die speciaal ontworpen is voor cloud-native en containergebaseerde omgevingen.
+
+Prometheus verzamelt metrics via een “pull”-model en slaat deze op als time-series data.
+
+---
+
+## Componenten
+
+- **Prometheus Server** → verzamelt en bewaart metrics
+- **Node Exporter** → systeemmetrics (CPU, RAM, disk)
+- **cAdvisor** → container metrics
+- **Grafana** → visualisatie
+
+---
+
+## Architectuur
+
+Services / Exporters  
+→ Prometheus (scraping)  
+→ Grafana dashboards  
+
+---
+
+## Voordelen
+
+- Open source en gratis
+- Industriestandaard
+- Zeer geschikt voor Docker
+- Sterke querytaal (PromQL)
+- Geen vendor lock-in
+- Goede integratie met Grafana
+
+---
+
+## Nadelen
+
+- Vereist eigen infrastructuur
+- Initiële configuratie nodig
+- Geen ingebouwde lange termijn opslag (standaard)
+
+---
+
+## Technische Evaluatie
+
+Prometheus is ontworpen voor microservices-architecturen en sluit perfect aan bij de Docker Voting App. De tool wordt breed gebruikt in de industrie en biedt uitgebreide monitoringmogelijkheden zonder licentiekosten.
+
+---
+
+# 6. Vergelijking
+
+| Criteria | CloudWatch | Datadog | Prometheus |
+|-----------|------------|----------|------------|
+| Licentiekosten | Pay-per-use | Betalend | Gratis |
+| Vendor lock-in | Ja | Ja | Nee |
+| Docker-geschikt | Ja | Ja | Zeer geschikt |
+| Industriestandaard | AWS-specifiek | SaaS | Ja |
+| Integratie met Grafana | Beperkt | Niet nodig | Native |
+
+---
+
+# 7. Gekozen Metrics Tool
+
+Voor dit project werd gekozen voor **Prometheus**.
+
+---
+
+## Motivatie van de keuze
+
+De keuze voor Prometheus is gebaseerd op:
+
+- Open source en kostenvrij
+- Industriestandaard voor cloud-native monitoring
+- Geschikt voor Docker en microservices
+- Geen vendor lock-in
+- Goede integratie met Grafana
+- Ondersteuning voor alerting
+
+Prometheus past het best binnen de gekozen open source observability-stack.
+
+---
+
+# 8. Conclusie
+
+Binnen de metrics-pijler werd gekozen voor Prometheus omwille van flexibiliteit, kostenneutraliteit en industrierelevantie.
+
+Hoewel CloudWatch en Datadog valide alternatieven zijn, ondersteunt Prometheus beter de leerdoelstellingen en de cloud-agnostische architectuur van het project.

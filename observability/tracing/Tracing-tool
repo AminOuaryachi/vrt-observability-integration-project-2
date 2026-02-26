@@ -1,0 +1,211 @@
+# Tracing-pijler 
+
+## 1. Doel van Tracing binnen het Project
+
+In een microservices-architectuur bestaat een gebruikersrequest vaak uit meerdere stappen:
+
+Gebruiker  
+→ Frontend  
+→ Backend  
+→ Database  
+
+Wanneer een probleem optreedt, is het belangrijk om te weten **waar** in deze keten het probleem zich bevindt.
+
+Distributed tracing maakt het mogelijk om één request volledig te volgen doorheen alle services.
+
+Tracing beantwoordt vooral de vraag:  
+**Waar zit het probleem?**
+
+Binnen dit project dient tracing om:
+
+- Requests van begin tot einde te volgen  
+- De duur van elke stap te meten  
+- Bottlenecks te detecteren  
+- Fouten per service zichtbaar te maken  
+- Correlatie mogelijk te maken met logs via Trace ID  
+
+---
+
+# 2. Onderzochte Tracing Tools
+
+Voor de tracing-pijler werden drie oplossingen onderzocht:
+
+1. AWS X-Ray  
+2. Jaeger  
+3. Grafana Tempo  
+
+Elke tool werd geëvalueerd op basis van:
+
+- Kosten  
+- Complexiteit  
+- Integratie  
+- Schaalbaarheid  
+- Geschiktheid voor Docker/microservices  
+
+---
+
+# 3. AWS X-Ray
+
+## Beschrijving
+
+AWS X-Ray is een tracingdienst van Amazon Web Services. Het laat toe om requests te analyseren binnen een AWS-omgeving en toont automatisch een service map.
+
+---
+
+## Architectuur
+
+Applicatie  
+→ X-Ray SDK  
+→ X-Ray Daemon  
+→ AWS X-Ray Console  
+
+---
+
+## Voordelen
+
+- Eenvoudige integratie binnen AWS  
+- Geen eigen infrastructuur nodig  
+- Automatische service visualisatie  
+- Goede integratie met CloudWatch  
+
+---
+
+## Nadelen
+
+- Pay-per-use kostenmodel  
+- Vendor lock-in binnen AWS  
+- Beperkt tot AWS-ecosysteem  
+- Minder overdraagbare kennis  
+
+---
+
+## Evaluatie
+
+AWS X-Ray is efficiënt binnen een AWS-omgeving, maar creëert afhankelijkheid van AWS en werkt met een gebruiksgebaseerd kostenmodel. Voor dit project werd gezocht naar een cloud-agnostische oplossing.
+
+---
+
+# 4. Jaeger
+
+## Beschrijving
+
+Jaeger is een open source distributed tracing tool ontwikkeld binnen de CNCF. Het wordt veel gebruikt in cloud-native omgevingen.
+
+---
+
+## Architectuur
+
+Applicatie  
+→ OpenTelemetry / Jaeger SDK  
+→ Jaeger Collector  
+→ Jaeger UI  
+
+---
+
+## Voordelen
+
+- Open source en gratis  
+- Industriestandaard  
+- Goede visualisatie van traces  
+- Veel gebruikt in microservices-architecturen  
+
+---
+
+## Nadelen
+
+- Vereist eigen infrastructuur  
+- Complexere configuratie  
+- Meer onderhoud bij schaalvergroting  
+
+---
+
+## Evaluatie
+
+Jaeger is een krachtige tracingtool, maar introduceert meer complexiteit dan nodig is voor dit project. Binnen de gekozen Grafana-stack werd gezocht naar een beter geïntegreerde oplossing.
+
+---
+
+# 5. Grafana Tempo
+
+## Beschrijving
+
+Grafana Tempo is een open source tracing backend die ontworpen is om eenvoudig en lichtgewicht te zijn. Het werkt nauw samen met Grafana en OpenTelemetry.
+
+Tempo slaat traces op en maakt het mogelijk om ze te visualiseren via Grafana.
+
+---
+
+## Componenten
+
+- **OpenTelemetry (OTel)** → genereert en verzamelt traces  
+- **Tempo** → opslag en verwerking van traces  
+- **Grafana** → visualisatie  
+
+---
+
+## Architectuur
+
+Applicatie (met OpenTelemetry)  
+→ OTel Collector  
+→ Tempo  
+→ Grafana  
+
+---
+
+## Voordelen
+
+- Open source en gratis  
+- Lichtgewicht architectuur  
+- Goede integratie met Grafana  
+- Eenvoudige correlatie met logs via Trace ID  
+- Geschikt voor Docker en microservices  
+- Geen vendor lock-in  
+
+---
+
+## Nadelen
+
+- Minder uitgebreide features dan Jaeger  
+- Vereist eigen infrastructuur  
+- Minder mature dan oudere tracing-oplossingen  
+
+---
+
+# 6. Vergelijking
+
+| Criteria | AWS X-Ray | Jaeger | Tempo |
+|------------|------------|----------|--------|
+| Licentiekosten | Pay-per-use | Gratis | Gratis |
+| Vendor lock-in | Ja | Nee | Nee |
+| Infrastructuurbeheer | Geen | Vereist | Vereist |
+| Docker-geschikt | Ja | Ja | Zeer geschikt |
+| Integratie met Grafana | Beperkt | Mogelijk | Native |
+
+---
+
+# 7. Gekozen Tracing Tool
+
+Voor dit project werd gekozen voor **Grafana Tempo** in combinatie met **OpenTelemetry**.
+
+---
+
+## Motivatie van de keuze
+
+De keuze voor Tempo is gebaseerd op:
+
+- Open source en kostenvrij  
+- Goede integratie met Grafana  
+- Ondersteuning van correlatie tussen logs, metrics en traces  
+- Geschiktheid voor containergebaseerde applicaties  
+- Geen vendor lock-in  
+- Eenvoudige architectuur  
+
+Tempo sluit perfect aan bij de gekozen open source observability-stack en ondersteunt rechtstreeks de doelstellingen van het project.
+
+---
+
+# 8. Conclusie
+
+Binnen de tracing-pijler werd gekozen voor Grafana Tempo omdat het een goede balans biedt tussen eenvoud, prestaties en integratie.
+
+Hoewel AWS X-Ray en Jaeger technisch sterke alternatieven zijn, past Tempo het best binnen de gekozen Grafana-stack en ondersteunt het de centrale doelstelling van het project: het analyseren en correleren van requests binnen een gedistribueerde applicatie.
