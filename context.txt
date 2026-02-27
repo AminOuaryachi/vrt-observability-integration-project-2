@@ -1,0 +1,101 @@
+===============================================================
+HANDOFF CONTEXT — VRT Observability Project
+===============================================================
+Datum: 2026-02-27
+Repo: https://github.com/AminOuaryachi/vrt-observability-integration-project-2
+Branch: main
+
+Voor de volledige Trello kaarten met checklists: docs/help/Trello_Kaarten_NL.md
+Voor de volledige projectuitleg:               docs/help/ProjetVRT_Uitleg_NL.md (NL) of ProjetVRT_Explication.md (FR)
+
+---------------------------------------------------------------
+1. PROJECTOVERZICHT
+---------------------------------------------------------------
+Groepsproject van 5 studenten voor VRT (Belgische openbare omroep).
+Doel: volledige observability stack (logging + metrics + tracing) bouwen op AWS,
+gecorreleerd via trace ID, zodat je een probleem detecteert in < 10 minuten.
+
+Deadline MVP demo: 1 april 2026
+Deadline eindoplevering: juni 2026
+
+AWS omgeving: sandbox van VRT, admin-rechten, kostenalarm aanwezig.
+
+---------------------------------------------------------------
+2. TRELLO SPRINT STATUS
+---------------------------------------------------------------
+
+SPRINT 1 — Onderzoek & Opzet → VOLLEDIG AFGEROND
+  ✅ Kaart 1: AWS-accounts opzetten
+  ✅ Kaart 2: Communicatie & projecttools opzetten
+  ✅ Kaart 3: Demo-app gekozen → Docker Example Voting App
+  ✅ Kaart 4: Onderzoek Logging → Grafana Loki + Promtail gekozen
+  ✅ Kaart 5: Onderzoek Metrics → Prometheus + Grafana gekozen
+  ✅ Kaart 6: Onderzoek Tracing → Jaeger + OpenTelemetry gekozen
+  ✅ Kaart 7: Toolkeuze-document → docs/keuze/toolkeuze.md (definitief)
+
+SPRINT 2 — App deployen op AWS → VOLGENDE SPRINT
+  ⬜ Kaart 8: EC2 aanmaken + Security Group instellen  ← VOLGENDE TAAK
+              (geen aparte VPC nodig — default VPC van AWS gebruiken)
+              (Security Group zit IN de EC2 wizard, geen aparte stap)
+              (1 EC2 voor het hele team, niet 1 per persoon)
+  ⬜ Kaart 9: Voting App deployen op de EC2            ← VOLGENDE TAAK
+  ⬜ Kaart 10: Deployment valideren                    ← VOLGENDE TAAK
+
+SPRINT 3 — Observability implementeren → NOG NIET BEGONNEN
+  ⬜ Kaart 11: Pijler Logging implementeren
+  ⬜ Kaart 12: Pijler Metrics implementeren
+  ⬜ Kaart 13: Pijler Tracing implementeren
+  ⬜ Kaart 14: De 3 pijlers correleren
+
+SPRINT 4 — Storingscenario's & MVP-demo → NOG NIET BEGONNEN
+  ⬜ Kaart 15-18 (zie Trello_Kaarten_NL.md)
+
+---------------------------------------------------------------
+3. GENOMEN BESLISSINGEN (samenvatting)
+---------------------------------------------------------------
+Volledige argumentatie: docs/keuze/toolkeuze.md en docs/keuze/app-keuze.md
+
+Gekozen app: Docker Example Voting App
+  - 5 services: Vote (Python) → Redis → Worker (.NET/C#) → PostgreSQL → Result (Node.js)
+  - 3-4 hops per request, 3 programmeertalen, geen ingebouwde observability
+  - Ligt klaar in /app/ met docker-compose.yml
+
+Gekozen tools (alleen open source, geen SaaS, geen AWS-native):
+  - Tracing:  Jaeger + OpenTelemetry Collector
+  - Metrics:  Prometheus + Grafana
+  - Logging:  Grafana Loki + Promtail
+
+---------------------------------------------------------------
+4. PROJECTSTRUCTUUR IN DE REPO
+---------------------------------------------------------------
+/app/
+  docker-compose.yml         → start alle 5 services van de Voting App
+  vote/                      → Python + Flask (poort 5000)
+  result/                    → Node.js + Socket.io (poort 5001)
+  worker/                    → .NET C# (verwerkt stemmen van Redis naar PostgreSQL)
+  healthchecks/              → health check scripts
+
+/docs/keuze/
+  app-keuze.md               → waarom Voting App gekozen
+  toolkeuze.md               → waarom Jaeger, Prometheus, Loki (uitgebreide argumentatie)
+
+/docs/help/
+  Trello_Kaarten_NL.md       → ALLE Trello kaarten met checklists (volg dit!)
+  ProjetVRT_Uitleg_NL.md     → volledige projectuitleg (Nederlands)
+  ProjetVRT_Explication.md   → volledige projectuitleg (Frans)
+
+/infrastructure/aws/         → leeg — hier hoort alles van AWS infrastructuur
+/observability/logging/      → leeg — hier komt Loki + Promtail config
+/observability/metrics/      → leeg — hier komt Prometheus + Grafana config
+/observability/tracing/      → leeg — hier komt Jaeger + OTel Collector config
+/scenarios/                  → leeg — hier komen de failure scenario scripts
+
+---------------------------------------------------------------
+5. CONSTRAINTS
+---------------------------------------------------------------
+- Alleen open source tools (geen SaaS, geen CloudWatch, geen Datadog, geen X-Ray)
+- Documentatie in proza (geen tabellen, simpele woorden)
+- Volg de Trello kaarten volgorde: docs/help/Trello_Kaarten_NL.md
+- Geen Co-Authored-By regels in commit messages
+
+===============================================================

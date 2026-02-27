@@ -122,48 +122,33 @@ Het onderzoek van de 3 teams samenvoegen in een enkel document. Per pijler: geko
 
 ## Lijst: SPRINT 2 — App deployen op AWS (Week 3-4)
 
-### Kaart 8: AWS-netwerk configureren (VPC)
-**Labels:** Infrastructuur, Prioriteit Hoog
-**Toegewezen aan:** 1 persoon
-**Geschatte duur:** 2-3 dagen
-**Beschrijving:**
-De netwerkomgeving opzetten in AWS zodat de applicatie veilig en correct kan communiceren.
-**Checklist:**
-- [ ] VPC aanmaken (of standaard VPC gebruiken)
-- [ ] Publiek subnet aanmaken (voor frontend)
-- [ ] Prive subnet aanmaken (voor backend en database)
-- [ ] Security Groups configureren (firewall-regels)
-- [ ] Internet Gateway configureren
-- [ ] Netwerktopologie documenteren met een schema
-
----
-
-### Kaart 9: Full-stack app deployen op AWS
+### Kaart 8: EC2-instantie aanmaken en Voting App deployen
 **Labels:** Infrastructuur, Prioriteit Hoog
 **Toegewezen aan:** 2 personen
-**Geschatte duur:** 3-5 dagen
+**Geschatte duur:** 1-2 dagen
 **Beschrijving:**
-De gekozen demo-app deployen op de AWS-sandbox. Zorgen dat frontend, backend en database correct met elkaar communiceren.
+Eén EC2-instantie aanmaken voor het hele team. Alle 5 teamleden werken op dezelfde server via SSH. Geen aparte VPC nodig — de standaard VPC van AWS is voldoende. De Security Group wordt ingesteld tijdens het aanmaken van de EC2, niet als aparte stap.
 **Checklist:**
-- [ ] EC2-instantie lanceren (Ubuntu of Amazon Linux)
+- [ ] EC2-instantie lanceren (Ubuntu 22.04 LTS, t3.medium aanbevolen)
+- [ ] Tijdens aanmaken: Security Group instellen met poorten 22 (SSH), 5000 (Vote), 5001 (Result)
+- [ ] Key pair aanmaken en downloaden (.pem bestand)
+- [ ] Verbinden via SSH: ssh -i <key>.pem ubuntu@<publiek-ip>
 - [ ] Docker en Docker Compose installeren op de instantie
-- [ ] GitHub-repo van de app klonen
-- [ ] App starten met docker-compose up -d
-- [ ] Security Group poorten openzetten
-- [ ] Frontend bereikbaar maken via publiek IP
-- [ ] Testen: frontend -> backend -> database werkt
+- [ ] GitHub-repo klonen: git clone <repo-url>
+- [ ] App starten vanuit /app/: docker compose up -d
+- [ ] Controleren dat alle containers draaien: docker compose ps
 
 ---
 
-### Kaart 10: Deployment valideren
+### Kaart 9: Deployment valideren
 **Labels:** Testen, Prioriteit Hoog
 **Toegewezen aan:** Iedereen
 **Geschatte duur:** 1 dag
 **Checklist:**
-- [ ] Frontend openen in de browser via publiek IP
-- [ ] Controleren dat frontend met backend communiceert
-- [ ] Controleren dat backend met database communiceert
-- [ ] Enkele testrequests uitvoeren
+- [ ] Vote frontend openen in de browser: http://<publiek-ip>:5000
+- [ ] Result frontend openen in de browser: http://<publiek-ip>:5001
+- [ ] Een stem uitbrengen en controleren dat het resultaat verschijnt
+- [ ] Controleren dat alle 5 containers actief zijn: docker compose ps
 - [ ] Architectuurschema tekenen en opslaan in de repo
 
 ---
