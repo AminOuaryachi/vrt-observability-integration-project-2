@@ -34,10 +34,10 @@ SPRINT 1 — Onderzoek & Opzet → VOLLEDIG AFGEROND
   ✅ Kaart 7: Toolkeuze-document → docs/keuze/toolkeuze.md (definitief)
 
 SPRINT 2 — App deployen op AWS → VOLGENDE SPRINT
-  ⬜ Kaart 8: EC2 aanmaken + Security Group instellen  ← VOLGENDE TAAK
+  ⬜ Kaart 8: EC2 aanmaken + team verbinden via SSH    ← VOLGENDE TAAK
+              (1 EC2 voor het hele team, .pem delen via Teams)
+              (Windows: PowerShell + icacls / Mac/Linux: chmod 400)
               (geen aparte VPC nodig — default VPC van AWS gebruiken)
-              (Security Group zit IN de EC2 wizard, geen aparte stap)
-              (1 EC2 voor het hele team, niet 1 per persoon)
   ⬜ Kaart 9: Voting App deployen op de EC2            ← VOLGENDE TAAK
   ⬜ Kaart 10: Deployment valideren                    ← VOLGENDE TAAK
 

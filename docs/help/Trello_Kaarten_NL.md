@@ -122,25 +122,42 @@ Het onderzoek van de 3 teams samenvoegen in een enkel document. Per pijler: geko
 
 ## Lijst: SPRINT 2 — App deployen op AWS (Week 3-4)
 
-### Kaart 8: EC2-instantie aanmaken en Voting App deployen
+### Kaart 8: EC2-instantie aanmaken en team verbinden
 **Labels:** Infrastructuur, Prioriteit Hoog
-**Toegewezen aan:** 2 personen
-**Geschatte duur:** 1-2 dagen
+**Toegewezen aan:** 1 persoon (de rest volgt stap "SSH verbinden")
+**Geschatte duur:** 1 dag
 **Beschrijving:**
-Eén EC2-instantie aanmaken voor het hele team. Alle 5 teamleden werken op dezelfde server via SSH. Geen aparte VPC nodig — de standaard VPC van AWS is voldoende. De Security Group wordt ingesteld tijdens het aanmaken van de EC2, niet als aparte stap.
+Eén EC2-instantie aanmaken voor het hele team. Alle 5 teamleden werken op dezelfde server via SSH. Geen aparte VPC nodig — de standaard VPC van AWS is voldoende. De Security Group wordt ingesteld tijdens het aanmaken van de EC2, niet als aparte stap. Het .pem bestand wordt gedeeld met het team via Teams.
 **Checklist:**
 - [ ] EC2-instantie lanceren (Ubuntu 22.04 LTS, t3.medium aanbevolen)
 - [ ] Tijdens aanmaken: Security Group instellen met poorten 22 (SSH), 5000 (Vote), 5001 (Result)
 - [ ] Key pair aanmaken en downloaden (.pem bestand)
-- [ ] Verbinden via SSH: ssh -i <key>.pem ubuntu@<publiek-ip>
-- [ ] Docker en Docker Compose installeren op de instantie
-- [ ] GitHub-repo klonen: git clone <repo-url>
-- [ ] App starten vanuit /app/: docker compose up -d
-- [ ] Controleren dat alle containers draaien: docker compose ps
+- [ ] .pem bestand delen met het team via Teams
+- [ ] Iedereen verbindt via SSH:
+  - Mac/Linux: chmod 400 <key>.pem → ssh -i <key>.pem ubuntu@<publiek-ip>
+  - Windows: PowerShell openen → ssh -i <key>.pem ubuntu@<publiek-ip>
+    (als permissie-fout: icacls <key>.pem /inheritance:r /grant:r "%username%:R")
+- [ ] Controleren dat iedereen kan inloggen op de server
 
 ---
 
-### Kaart 9: Deployment valideren
+### Kaart 9: Voting App deployen op de EC2
+**Labels:** Infrastructuur, Prioriteit Hoog
+**Toegewezen aan:** 2 personen
+**Geschatte duur:** 1 dag
+**Beschrijving:**
+De Voting App klonen en opstarten op de EC2 via Docker Compose. Docker moet geïnstalleerd worden op de server.
+**Checklist:**
+- [ ] Docker installeren: sudo apt update && sudo apt install -y docker.io docker-compose-plugin
+- [ ] Gebruiker toevoegen aan Docker groep: sudo usermod -aG docker ubuntu (daarna opnieuw inloggen)
+- [ ] GitHub-repo klonen: git clone <repo-url>
+- [ ] App starten vanuit de /app/ map: docker compose up -d
+- [ ] Controleren dat alle 5 containers draaien: docker compose ps
+
+---
+
+### Kaart 10: Deployment valideren
+
 **Labels:** Testen, Prioriteit Hoog
 **Toegewezen aan:** Iedereen
 **Geschatte duur:** 1 dag
