@@ -172,53 +172,60 @@ De Voting App klonen en opstarten op de EC2 via Docker Compose. Docker moet geï
 
 ## Lijst: SPRINT 3 — Observability implementeren (Week 5-7)
 
-### Kaart 11: Pijler Logging implementeren
-**Labels:** Implementatie, Pijler Logs
-**Toegewezen aan:** Team Logs
-**Geschatte duur:** 5-7 dagen
-**Beschrijving:**
-De gekozen logging-tool installeren en configureren. Alle services aansluiten en controleren dat logs correct binnenkomen.
-**Checklist:**
-- [ ] Logging-agent installeren op elke service
-- [ ] Logs centraliseren op een plek
-- [ ] Filters aanmaken om fouten te vinden
-- [ ] Alerts configureren op foutpatronen ("ERROR", "500", "timeout")
-- [ ] Test: fout veroorzaken en controleren dat het in de logs verschijnt
-- [ ] Documentatie schrijven: hoe het opgezet is, hoe het werkt
-
----
-
-### Kaart 12: Pijler Metrics implementeren
+### Kaart 11: Prometheus + Grafana opzetten (Metrics)
 **Labels:** Implementatie, Pijler Metrics
 **Toegewezen aan:** Team Metrics
-**Geschatte duur:** 5-7 dagen
+**Geschatte duur:** 2-3 dagen
 **Beschrijving:**
-De gekozen metrics-tool installeren en configureren. Dashboards en alerts opzetten.
+Prometheus en Grafana toevoegen aan de docker-compose.yml. Geen code aanpassingen nodig — Prometheus scrapt automatisch metrics via exporters. Grafana is de centrale visualisatielaag voor alle 3 pijlers.
 **Checklist:**
-- [ ] Metrics-exporters installeren (Node Exporter, app metrics)
-- [ ] Metrics-verzameling configureren (scraping of agent)
-- [ ] Dashboard "Globaal overzicht" maken: alle services UP/DOWN
-- [ ] Dashboard per service maken: CPU, geheugen, latentie, fouten
-- [ ] Alerts configureren: service DOWN, CPU > 80%, responstijd > 2s
-- [ ] Test: service stoppen en controleren dat alert afgaat
-- [ ] Documentatie schrijven
+- [ ] Prometheus toevoegen aan docker-compose.yml (poort 9090)
+- [ ] Grafana toevoegen aan docker-compose.yml (poort 3000)
+- [ ] node_exporter toevoegen (CPU, RAM, schijf van de EC2)
+- [ ] redis_exporter toevoegen (Redis metrics)
+- [ ] prometheus.yml configureren: scrape targets instellen voor alle exporters
+- [ ] Grafana openen: http://<publiek-ip>:3000 (admin/admin)
+- [ ] Prometheus datasource toevoegen in Grafana
+- [ ] Dashboard maken: alle services UP/DOWN
+- [ ] Test: container stoppen en controleren dat Grafana het toont
+- [ ] Security Group poort 3000 openzetten op AWS
 
 ---
 
-### Kaart 13: Pijler Tracing implementeren
+### Kaart 12: Loki + Promtail opzetten (Logging)
+**Labels:** Implementatie, Pijler Logs
+**Toegewezen aan:** Team Logs
+**Geschatte duur:** 2-3 dagen
+**Beschrijving:**
+Loki en Promtail toevoegen aan de docker-compose.yml. Geen code aanpassingen nodig — Promtail leest automatisch de Docker logs van alle containers en stuurt ze naar Loki. Loki datasource toevoegen in Grafana.
+**Checklist:**
+- [ ] Loki toevoegen aan docker-compose.yml (poort 3100)
+- [ ] Promtail toevoegen aan docker-compose.yml
+- [ ] promtail-config.yml schrijven: Docker logs lezen en naar Loki sturen
+- [ ] Loki datasource toevoegen in Grafana
+- [ ] Logs bekijken in Grafana (Explore → Loki)
+- [ ] Test: fout veroorzaken en controleren dat het in de logs verschijnt
+- [ ] Filter maken op loglevel ERROR
+
+---
+
+### Kaart 13: Jaeger + OpenTelemetry opzetten (Tracing)
 **Labels:** Implementatie, Pijler Tracing
 **Toegewezen aan:** Team Tracing
-**Geschatte duur:** 5-7 dagen
+**Geschatte duur:** 3-5 dagen
 **Beschrijving:**
-De gekozen tracing-tool installeren en configureren. De app instrumenteren zodat spans gegenereerd worden.
+Jaeger en de OpenTelemetry Collector toevoegen aan de docker-compose.yml. Daarna de 3 services instrumenteren met de OpenTelemetry SDK: Vote (Python), Worker (.NET), Result (Node.js). Dit is de meest complexe kaart omdat code aanpassingen nodig zijn.
 **Checklist:**
-- [ ] SDK of auto-instrumentatie toevoegen aan de app
-- [ ] Tracing-collector configureren (OTel Collector of X-Ray Daemon)
-- [ ] Tracing-backend configureren (Jaeger, X-Ray, of Tempo)
-- [ ] Test: request doen en volledige trace controleren (frontend -> backend -> DB)
-- [ ] Spans controleren: duur, metadata, fouten
-- [ ] Test: kunstmatige latentie toevoegen en in traces zien
-- [ ] Documentatie schrijven
+- [ ] Jaeger toevoegen aan docker-compose.yml (UI poort 16686, OTLP poort 4317)
+- [ ] OpenTelemetry Collector toevoegen aan docker-compose.yml
+- [ ] otel-collector-config.yml schrijven: traces doorsturen naar Jaeger
+- [ ] Vote instrumenteren: opentelemetry-sdk + opentelemetry-instrumentation-flask (Python)
+- [ ] Worker instrumenteren: OpenTelemetry.Extensions.Hosting (.NET)
+- [ ] Result instrumenteren: @opentelemetry/sdk-node (Node.js)
+- [ ] Jaeger UI openen: http://<publiek-ip>:16686
+- [ ] Test: stem uitbrengen en volledige trace zien (Vote → Redis → Worker → DB)
+- [ ] Jaeger datasource toevoegen in Grafana
+- [ ] Security Group poorten 16686 en 4317 openzetten op AWS
 
 ---
 
