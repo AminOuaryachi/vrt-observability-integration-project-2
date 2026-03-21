@@ -1,5 +1,5 @@
-// === OBSERVABILITY: Tracing — config is in observability/tracing/result-tracing.js ===
-require('./tracing');
+// === OBSERVABILITY: Tracing — config and span logic in observability/tracing/result-tracing.js ===
+const { traceClientConnected, traceScoresUpdated } = require('./tracing');
 
 var express = require('express'),
     async = require('async'),
@@ -13,6 +13,9 @@ var port = process.env.PORT || 4000;
 
 io.on('connection', function (socket) {
 
+  // === OBSERVABILITY: Trace new client connection to result page ===
+  traceClientConnected(socket.id);
+
   socket.emit('message', { text : 'Welcome!' });
 
   socket.on('subscribe', function (data) {
@@ -23,6 +26,8 @@ io.on('connection', function (socket) {
 var pool = new Pool({
   connectionString: 'postgres://postgres:postgres@db/postgres'
 });
+
+var previousVotes = {a: 0, b: 0}; // === OBSERVABILITY: Track score changes ===
 
 async.retry(
   {times: 1000, interval: 1000},
@@ -49,6 +54,11 @@ function getVotes(client) {
       console.error("Error performing query: " + err);
     } else {
       var votes = collectVotesFromResult(result);
+      // === OBSERVABILITY: Trace only when scores actually change (new vote came in) ===
+      if (votes.a !== previousVotes.a || votes.b !== previousVotes.b) {
+        traceScoresUpdated(votes.a, votes.b);
+        previousVotes = votes;
+      }
       io.sockets.emit("scores", JSON.stringify(votes));
     }
 
