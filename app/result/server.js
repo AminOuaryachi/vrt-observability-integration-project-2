@@ -1,3 +1,4 @@
+// === OBSERVABILITY: Tracing — config is in observability/tracing/result-tracing.js ===
 require('./tracing');
 
 var express = require('express'),

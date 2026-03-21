@@ -1,18 +1,21 @@
 from flask import Flask, render_template, request, make_response, g
 from redis import Redis
-from opentelemetry import trace
-from tracing import init_tracing, add_vote_attributes, record_exception
 import os
 import socket
 import random
 import json
 import logging
 
+# === OBSERVABILITY: Tracing — config is in observability/tracing/vote-tracing.py ===
+from opentelemetry import trace
+from tracing import init_tracing, add_vote_attributes, record_exception
+
 option_a = os.getenv('OPTION_A', "Cats")
 option_b = os.getenv('OPTION_B', "Dogs")
 hostname = socket.gethostname()
 
 app = Flask(__name__)
+# === OBSERVABILITY: Initialize tracing (Flask + Redis auto-instrumentation) ===
 init_tracing(app)
 
 gunicorn_error_logger = logging.getLogger('gunicorn.error')
@@ -39,8 +42,10 @@ def hello():
             app.logger.info('Received vote for %s', vote)
             data = json.dumps({'voter_id': voter_id, 'vote': vote})
             redis.rpush('votes', data)
+            # === OBSERVABILITY: Add vote details to the current trace span ===
             add_vote_attributes(trace.get_current_span(), vote, voter_id)
         except Exception as exc:
+            # === OBSERVABILITY: Mark span as error so it appears in Jaeger with error=true ===
             record_exception(trace.get_current_span(), exc)
             raise
 
