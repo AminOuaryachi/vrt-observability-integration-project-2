@@ -32,14 +32,4 @@ function traceScoresUpdated(cats, dogs, connectedClients, emitFn) {
   parentSpan.end();
 }
 
-/** Trace a database query error in result-service */
-function traceQueryError(error) {
-  const span = trace.getTracer('result-service').startSpan('db-query-error');
-  span.setAttribute('error', true);
-  span.setAttribute('error.message', error.message || String(error));
-  span.setStatus({ code: 2, message: error.message });
-  span.recordException(error);
-  span.end();
-}
-
-module.exports = { traceScoresUpdated, traceQueryError };
+module.exports = { traceScoresUpdated };

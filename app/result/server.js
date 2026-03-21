@@ -1,5 +1,5 @@
 // === OBSERVABILITY: Tracing — config and span logic in observability/tracing/result-tracing.js ===
-const { traceScoresUpdated, traceQueryError } = require('./tracing');
+const { traceScoresUpdated } = require('./tracing');
 
 var express = require('express'),
     async = require('async'),
@@ -26,10 +26,6 @@ var pool = new Pool({
 
 var previousVotes = {a: 0, b: 0}; // === OBSERVABILITY: Track score changes ===
 
-// === OBSERVABILITY: Trace unexpected pool-level DB errors (e.g. DB crash) ===
-pool.on('error', function(err) {
-  traceQueryError(err);
-});
 
 async.retry(
   {times: 1000, interval: 1000},
@@ -54,8 +50,6 @@ function getVotes(client) {
   client.query('SELECT vote, COUNT(id) AS count FROM votes GROUP BY vote', [], function(err, result) {
     if (err) {
       console.error("Error performing query: " + err);
-      // === OBSERVABILITY: Trace DB query error ===
-      traceQueryError(err);
     } else {
       var votes = collectVotesFromResult(result);
       // === OBSERVABILITY: Trace only when scores actually change (new vote came in) ===
