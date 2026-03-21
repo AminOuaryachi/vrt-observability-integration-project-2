@@ -41,4 +41,15 @@ function traceScoresUpdated(cats, dogs, connectedClients, emitFn) {
   parentSpan.end();
 }
 
-module.exports = { traceScoresUpdated };
+/** Trace a failed DB query — same span name as success for easy comparison in Jaeger */
+function traceDbError(error) {
+  const span = trace.getTracer('result-service').startSpan('query-votes-from-db');
+  span.setAttribute('db.system', 'postgresql');
+  span.setAttribute('db.operation', 'SELECT');
+  span.setAttribute('error', true);
+  span.setStatus({ code: 2, message: error.message });
+  span.recordException(error);
+  span.end();
+}
+
+module.exports = { traceScoresUpdated, traceDbError };
