@@ -1,5 +1,5 @@
 // === OBSERVABILITY: Tracing — config and span logic in observability/tracing/result-tracing.js ===
-const { traceScoresUpdated } = require('./tracing');
+const { traceScoresUpdated, traceQueryError } = require('./tracing');
 
 var express = require('express'),
     async = require('async'),
@@ -49,11 +49,13 @@ function getVotes(client) {
   client.query('SELECT vote, COUNT(id) AS count FROM votes GROUP BY vote', [], function(err, result) {
     if (err) {
       console.error("Error performing query: " + err);
+      // === OBSERVABILITY: Trace DB query error ===
+      traceQueryError(err);
     } else {
       var votes = collectVotesFromResult(result);
       // === OBSERVABILITY: Trace only when scores actually change (new vote came in) ===
       if (votes.a !== previousVotes.a || votes.b !== previousVotes.b) {
-        traceScoresUpdated(votes.a, votes.b, () => io.sockets.emit("scores", JSON.stringify(votes)));
+        traceScoresUpdated(votes.a, votes.b, io.engine.clientsCount, () => io.sockets.emit("scores", JSON.stringify(votes)));
         previousVotes = votes;
       } else {
         io.sockets.emit("scores", JSON.stringify(votes));

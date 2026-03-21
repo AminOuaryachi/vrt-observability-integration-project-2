@@ -15,7 +15,7 @@ const sdk = new NodeSDK({
 sdk.start();
 
 /** Trace when vote scores change — with child span for the broadcast to clients */
-function traceScoresUpdated(cats, dogs, emitFn) {
+function traceScoresUpdated(cats, dogs, connectedClients, emitFn) {
   const tracer = trace.getTracer('result-service');
   const parentSpan = tracer.startSpan('scores-updated');
   parentSpan.setAttribute('votes.cats', cats);
@@ -24,6 +24,7 @@ function traceScoresUpdated(cats, dogs, emitFn) {
   const ctx = trace.setSpan(context.active(), parentSpan);
   context.with(ctx, () => {
     const childSpan = tracer.startSpan('broadcast-to-clients');
+    childSpan.setAttribute('connected.clients', connectedClients);
     emitFn();
     childSpan.end();
   });
@@ -31,4 +32,14 @@ function traceScoresUpdated(cats, dogs, emitFn) {
   parentSpan.end();
 }
 
-module.exports = { traceScoresUpdated };
+/** Trace a database query error in result-service */
+function traceQueryError(error) {
+  const span = trace.getTracer('result-service').startSpan('db-query-error');
+  span.setAttribute('error', true);
+  span.setAttribute('error.message', error.message || String(error));
+  span.setStatus({ code: 2, message: error.message });
+  span.recordException(error);
+  span.end();
+}
+
+module.exports = { traceScoresUpdated, traceQueryError };
