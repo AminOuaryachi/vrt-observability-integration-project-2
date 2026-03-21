@@ -1,19 +1,33 @@
 using System;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using Newtonsoft.Json;
 using Npgsql;
+using OpenTelemetry;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using StackExchange.Redis;
 
 namespace Worker
 {
     public class Program
     {
+        private static readonly ActivitySource ActivitySource = new("Worker");
+
         public static int Main(string[] args)
         {
+            using var tracerProvider = Sdk.CreateTracerProviderBuilder()
+                .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("worker-service"))
+                .AddSource("Worker")
+                .AddOtlpExporter(opt => {
+                    opt.Endpoint = new Uri("http://otel-collector:4317");
+                })
+                .Build();
+
             try
             {
                 var pgsql = OpenDbConnection("Server=db;Username=postgres;Password=postgres;");
@@ -42,6 +56,9 @@ namespace Worker
                     {
                         var vote = JsonConvert.DeserializeAnonymousType(json, definition);
                         Console.WriteLine($"Processing vote for '{vote.vote}' by '{vote.voter_id}'");
+                        using var activity = ActivitySource.StartActivity("process-vote");
+                        activity?.SetTag("vote", vote.vote);
+                        activity?.SetTag("voter_id", vote.voter_id);
                         // Reconnect DB if down
                         if (!pgsql.State.Equals(System.Data.ConnectionState.Open))
                         {
