@@ -11,6 +11,8 @@ const sdk = new NodeSDK({
     getNodeAutoInstrumentations({
       // Disable fs instrumentation — generates too much noise (realpathSync, readFileSync)
       '@opentelemetry/instrumentation-fs': { enabled: false },
+      // Disable pg instrumentation — result polls DB every second, generates thousands of spans
+      '@opentelemetry/instrumentation-pg': { enabled: false },
     }),
   ],
 });
