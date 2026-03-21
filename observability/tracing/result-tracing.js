@@ -14,7 +14,7 @@ const sdk = new NodeSDK({
 
 sdk.start();
 
-/** Trace when vote scores change — with child span for the broadcast to clients */
+/** Trace when vote scores change — with child spans for DB result and broadcast */
 function traceScoresUpdated(cats, dogs, connectedClients, emitFn) {
   const tracer = trace.getTracer('result-service');
   const parentSpan = tracer.startSpan('scores-updated');
@@ -23,6 +23,15 @@ function traceScoresUpdated(cats, dogs, connectedClients, emitFn) {
 
   const ctx = trace.setSpan(context.active(), parentSpan);
   context.with(ctx, () => {
+    // Child span: DB query result
+    const dbSpan = tracer.startSpan('query-votes-from-db');
+    dbSpan.setAttribute('db.system', 'postgresql');
+    dbSpan.setAttribute('db.operation', 'SELECT');
+    dbSpan.setAttribute('votes.cats', cats);
+    dbSpan.setAttribute('votes.dogs', dogs);
+    dbSpan.end();
+
+    // Child span: broadcast to clients
     const childSpan = tracer.startSpan('broadcast-to-clients');
     childSpan.setAttribute('connected.clients', connectedClients);
     emitFn();
