@@ -58,7 +58,15 @@ namespace Worker
                         redisConn = OpenRedisConnection("redis");
                         redis = redisConn.GetDatabase();
                     }
-                    string json = redis.ListLeftPopAsync("votes").Result;
+                    // === OBSERVABILITY: Child span for reading vote from Redis queue ===
+                    string json;
+                    using (var redisReadActivity = ActivitySource.StartActivity("read-vote-from-redis"))
+                    {
+                        json = redis.ListLeftPopAsync("votes").Result;
+                        redisReadActivity?.SetTag("queue", "votes");
+                        redisReadActivity?.SetTag("found", json != null);
+                    }
+
                     if (json != null)
                     {
                         var vote = JsonConvert.DeserializeAnonymousType(json, definition);
