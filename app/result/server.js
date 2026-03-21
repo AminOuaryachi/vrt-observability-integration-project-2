@@ -26,6 +26,11 @@ var pool = new Pool({
 
 var previousVotes = {a: 0, b: 0}; // === OBSERVABILITY: Track score changes ===
 
+// === OBSERVABILITY: Trace unexpected pool-level DB errors (e.g. DB crash) ===
+pool.on('error', function(err) {
+  traceQueryError(err);
+});
+
 async.retry(
   {times: 1000, interval: 1000},
   function(callback) {
