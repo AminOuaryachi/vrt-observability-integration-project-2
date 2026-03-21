@@ -58,15 +58,7 @@ namespace Worker
                         redisConn = OpenRedisConnection("redis");
                         redis = redisConn.GetDatabase();
                     }
-                    // === OBSERVABILITY: Child span for reading vote from Redis queue ===
-                    string json;
-                    using (var redisReadActivity = ActivitySource.StartActivity("read-vote-from-redis"))
-                    {
-                        json = redis.ListLeftPopAsync("votes").Result;
-                        redisReadActivity?.SetTag("queue", "votes");
-                        redisReadActivity?.SetTag("found", json != null);
-                    }
-
+                    string json = redis.ListLeftPopAsync("votes").Result;
                     if (json != null)
                     {
                         var vote = JsonConvert.DeserializeAnonymousType(json, definition);
@@ -76,6 +68,13 @@ namespace Worker
                         using var activity = ActivitySource.StartActivity("process-vote");
                         activity?.SetTag("vote", vote.vote);
                         activity?.SetTag("voter_id", vote.voter_id);
+
+                        // === OBSERVABILITY: Child span for reading vote from Redis queue ===
+                        using (var redisReadActivity = ActivitySource.StartActivity("read-vote-from-redis"))
+                        {
+                            redisReadActivity?.SetTag("queue", "votes");
+                            redisReadActivity?.SetTag("vote", vote.vote);
+                        }
 
                         try
                         {
