@@ -1,3 +1,4 @@
+// === APPLICATION CODE ===
 using System;
 using System.Data.Common;
 using System.Diagnostics;
@@ -7,19 +8,25 @@ using System.Net.Sockets;
 using System.Threading;
 using Newtonsoft.Json;
 using Npgsql;
+using StackExchange.Redis;
+
+// === OBSERVABILITY: OpenTelemetry tracing imports ===
+// Note: tracing config for .NET must stay in the source code (compiled at build time)
+// For Python and Node.js, tracing config is separated in observability/tracing/
 using OpenTelemetry;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using StackExchange.Redis;
 
 namespace Worker
 {
     public class Program
     {
+        // === OBSERVABILITY: ActivitySource is the .NET equivalent of a tracer ===
         private static readonly ActivitySource ActivitySource = new("Worker");
 
         public static int Main(string[] args)
         {
+            // === OBSERVABILITY: Initialize tracing — sends traces to OTel Collector → Jaeger ===
             using var tracerProvider = Sdk.CreateTracerProviderBuilder()
                 .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("worker-service"))
                 .AddSource("Worker")
@@ -56,9 +63,12 @@ namespace Worker
                     {
                         var vote = JsonConvert.DeserializeAnonymousType(json, definition);
                         Console.WriteLine($"Processing vote for '{vote.vote}' by '{vote.voter_id}'");
+
+                        // === OBSERVABILITY: Start a trace span for each vote processed ===
                         using var activity = ActivitySource.StartActivity("process-vote");
                         activity?.SetTag("vote", vote.vote);
                         activity?.SetTag("voter_id", vote.voter_id);
+
                         // Reconnect DB if down
                         if (!pgsql.State.Equals(System.Data.ConnectionState.Open))
                         {
@@ -149,6 +159,7 @@ namespace Worker
 
         private static void UpdateVote(NpgsqlConnection connection, string voterId, string vote)
         {
+            // === OBSERVABILITY: Child span for the database operation ===
             using var activity = ActivitySource.StartActivity("update-vote-db");
             activity?.SetTag("db.system", "postgresql");
             activity?.SetTag("voter_id", voterId);
