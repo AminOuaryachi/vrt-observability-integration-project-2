@@ -14,18 +14,16 @@ const sdk = new NodeSDK({
 
 sdk.start();
 
-const tracer = trace.getTracer('result-service');
-
 /** Trace when a new client connects to the result page */
 function traceClientConnected(socketId) {
-  const span = tracer.startSpan('client-connected');
+  const span = trace.getTracer('result-service').startSpan('client-connected');
   span.setAttribute('socket.id', socketId);
   span.end();
 }
 
 /** Trace when vote scores change (new vote processed) */
 function traceScoresUpdated(cats, dogs) {
-  const span = tracer.startSpan('scores-updated');
+  const span = trace.getTracer('result-service').startSpan('scores-updated');
   span.setAttribute('votes.cats', cats);
   span.setAttribute('votes.dogs', dogs);
   span.end();
