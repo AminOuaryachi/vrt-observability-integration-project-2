@@ -98,6 +98,16 @@ services:
       - back-tier
       - front-tier
 
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    volumes:
+      - ../observability/tracing/otel-collector-config.yml:/etc/otel-collector-config.yml
+    command: ["--config=/etc/otel-collector-config.yml"]
+    depends_on:
+      - jaeger
+    networks:
+      - back-tier
+
   loki:
     image: grafana/loki:latest
     ports:

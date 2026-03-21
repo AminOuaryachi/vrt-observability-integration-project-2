@@ -5,7 +5,7 @@ const { getNodeAutoInstrumentations } = require('@opentelemetry/auto-instrumenta
 const sdk = new NodeSDK({
   serviceName: 'result',
   traceExporter: new OTLPTraceExporter({
-    url: 'http://jaeger:4318/v1/traces',
+    url: 'http://otel-collector:4318/v1/traces',
   }),
   instrumentations: [getNodeAutoInstrumentations()],
 });
