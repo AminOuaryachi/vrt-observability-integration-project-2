@@ -64,16 +64,18 @@ namespace Worker
                         var vote = JsonConvert.DeserializeAnonymousType(json, definition);
                         Console.WriteLine($"Processing vote for '{vote.vote}' by '{vote.voter_id}'");
 
+                        var voteLabel = vote.vote == "a" ? "Cats" : "Dogs";
+
                         // === OBSERVABILITY: Start a trace span for each vote processed ===
                         using var activity = ActivitySource.StartActivity("process-vote");
-                        activity?.SetTag("vote", vote.vote);
+                        activity?.SetTag("vote", voteLabel);
                         activity?.SetTag("voter_id", vote.voter_id);
 
                         // === OBSERVABILITY: Child span for reading vote from Redis queue ===
                         using (var redisReadActivity = ActivitySource.StartActivity("read-vote-from-redis"))
                         {
                             redisReadActivity?.SetTag("queue", "votes");
-                            redisReadActivity?.SetTag("vote", vote.vote);
+                            redisReadActivity?.SetTag("vote", voteLabel);
                         }
 
                         try
@@ -180,7 +182,7 @@ namespace Worker
             using var activity = ActivitySource.StartActivity("update-vote-db");
             activity?.SetTag("db.system", "postgresql");
             activity?.SetTag("voter_id", voterId);
-            activity?.SetTag("vote", vote);
+            activity?.SetTag("vote", vote == "a" ? "Cats" : "Dogs");
 
             var command = connection.CreateCommand();
             try
