@@ -3,14 +3,19 @@
 # docker-compose v1.27+ required
 
 services:
+
+  # ============================================================
+  # APPLICATION SERVICES
+  # ============================================================
+
   vote:
-    build: 
+    build:
       context: ./vote
       target: dev
     depends_on:
       redis:
         condition: service_healthy
-    healthcheck: 
+    healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost"]
       interval: 15s
       timeout: 5s
@@ -18,6 +23,7 @@ services:
       start_period: 10s
     volumes:
      - ./vote:/usr/local/app
+     # === OBSERVABILITY: Mount tracing config from observability/tracing/ ===
      - ../observability/tracing/vote-tracing.py:/usr/local/app/tracing.py
     ports:
       - "5000:80"
@@ -31,9 +37,10 @@ services:
     entrypoint: nodemon --inspect=0.0.0.0 server.js
     depends_on:
       db:
-        condition: service_healthy 
+        condition: service_healthy
     volumes:
       - ./result:/usr/local/app
+      # === OBSERVABILITY: Mount tracing config from observability/tracing/ ===
       - ../observability/tracing/result-tracing.js:/usr/local/app/tracing.js
     ports:
       - "5001:80"
@@ -47,9 +54,9 @@ services:
       context: ./worker
     depends_on:
       redis:
-        condition: service_healthy 
+        condition: service_healthy
       db:
-        condition: service_healthy 
+        condition: service_healthy
     networks:
       - back-tier
 
@@ -85,10 +92,17 @@ services:
     profiles: ["seed"]
     depends_on:
       vote:
-        condition: service_healthy 
+        condition: service_healthy
     networks:
       - front-tier
     restart: "no"
+
+  # ============================================================
+  # OBSERVABILITY — TRACING (Pillar 3)
+  # Jaeger: trace storage and UI (port 16686)
+  # OTel Collector: receives traces from apps, forwards to Jaeger
+  # Config: observability/tracing/otel-collector-config.yml
+  # ============================================================
 
   jaeger:
     image: jaegertracing/all-in-one:latest
@@ -110,6 +124,13 @@ services:
     networks:
       - back-tier
 
+  # ============================================================
+  # OBSERVABILITY — LOGGING (Pillar 2)
+  # Loki: log storage (port 3100)
+  # Promtail: reads Docker container logs and sends to Loki
+  # Config: observability/logging/promtail-config.yml
+  # ============================================================
+
   loki:
     image: grafana/loki:latest
     ports:
@@ -127,6 +148,15 @@ services:
       - loki
     networks:
       - back-tier
+
+  # ============================================================
+  # OBSERVABILITY — METRICS (Pillar 1)
+  # Prometheus: metrics collection (port 9090)
+  # Grafana: visualization dashboard for all 3 pillars (port 3000)
+  # node_exporter: EC2 system metrics (CPU, RAM, disk)
+  # redis_exporter: Redis metrics
+  # Config: observability/metrics/prometheus.yml
+  # ============================================================
 
   prometheus:
     image: prom/prometheus:latest
