@@ -88,6 +88,16 @@ services:
       - front-tier
     restart: "no"
 
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - back-tier
+      - front-tier
+
   loki:
     image: grafana/loki:latest
     ports:

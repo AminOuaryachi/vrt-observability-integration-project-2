@@ -19,3 +19,4 @@ docker compose up -d
 | Prometheus | http://<public-ip>:9090              |
 | Grafana    | http://<public-ip>:3000  (admin/admin) |
 | Loki       | http://<public-ip>:3100              |
+| Jaeger     | http://<public-ip>:16686             |
