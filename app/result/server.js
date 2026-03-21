@@ -56,10 +56,11 @@ function getVotes(client) {
       var votes = collectVotesFromResult(result);
       // === OBSERVABILITY: Trace only when scores actually change (new vote came in) ===
       if (votes.a !== previousVotes.a || votes.b !== previousVotes.b) {
-        traceScoresUpdated(votes.a, votes.b);
+        traceScoresUpdated(votes.a, votes.b, () => io.sockets.emit("scores", JSON.stringify(votes)));
         previousVotes = votes;
+      } else {
+        io.sockets.emit("scores", JSON.stringify(votes));
       }
-      io.sockets.emit("scores", JSON.stringify(votes));
     }
 
     setTimeout(function() {getVotes(client) }, 1000);
