@@ -178,8 +178,8 @@ namespace Worker
 
         private static void UpdateVote(NpgsqlConnection connection, string voterId, string vote)
         {
-            // === OBSERVABILITY: Child span for the database operation ===
-            using var activity = ActivitySource.StartActivity("update-vote-db");
+            // === OBSERVABILITY: Child span for the database operation (INSERT first vote, UPDATE if changing vote) ===
+            using var activity = ActivitySource.StartActivity("save-vote-to-db");
             activity?.SetTag("db.system", "postgresql");
             activity?.SetTag("voter_id", voterId);
             activity?.SetTag("vote", vote == "a" ? "Cats" : "Dogs");
