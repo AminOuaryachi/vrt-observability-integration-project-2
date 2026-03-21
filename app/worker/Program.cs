@@ -149,17 +149,24 @@ namespace Worker
 
         private static void UpdateVote(NpgsqlConnection connection, string voterId, string vote)
         {
+            using var activity = ActivitySource.StartActivity("update-vote-db");
+            activity?.SetTag("db.system", "postgresql");
+            activity?.SetTag("voter_id", voterId);
+            activity?.SetTag("vote", vote);
+
             var command = connection.CreateCommand();
             try
             {
                 command.CommandText = "INSERT INTO votes (id, vote) VALUES (@id, @vote)";
                 command.Parameters.AddWithValue("@id", voterId);
                 command.Parameters.AddWithValue("@vote", vote);
+                activity?.SetTag("db.operation", "INSERT");
                 command.ExecuteNonQuery();
             }
             catch (DbException)
             {
                 command.CommandText = "UPDATE votes SET vote = @vote WHERE id = @id";
+                activity?.SetTag("db.operation", "UPDATE");
                 command.ExecuteNonQuery();
             }
             finally
