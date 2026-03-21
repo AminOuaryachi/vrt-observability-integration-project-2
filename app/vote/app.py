@@ -43,7 +43,8 @@ def hello():
             data = json.dumps({'voter_id': voter_id, 'vote': vote})
             redis.rpush('votes', data)
             # === OBSERVABILITY: Add vote details to the current trace span ===
-            add_vote_attributes(trace.get_current_span(), vote, voter_id)
+            vote_label = option_a if vote == "a" else option_b
+            add_vote_attributes(trace.get_current_span(), vote_label, voter_id)
         except Exception as exc:
             # === OBSERVABILITY: Mark span as error so it appears in Jaeger with error=true ===
             record_exception(trace.get_current_span(), exc)
