@@ -9,6 +9,7 @@ import logging
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.sdk.resources import Resource
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 from opentelemetry.instrumentation.redis import RedisInstrumentor
@@ -19,7 +20,7 @@ hostname = socket.gethostname()
 
 app = Flask(__name__)
 
-provider = TracerProvider()
+provider = TracerProvider(resource=Resource({"service.name": "vote-service"}))
 provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter(
     endpoint="http://otel-collector:4318/v1/traces"
 )))
