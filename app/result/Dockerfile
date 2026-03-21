@@ -12,7 +12,7 @@ RUN npm install -g nodemon
 
 COPY package*.json ./
 
-RUN npm ci && \
+RUN npm install --legacy-peer-deps && \
  npm cache clean --force && \
  mv /usr/local/app/node_modules /node_modules
 
