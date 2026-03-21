@@ -1,5 +1,5 @@
 // === OBSERVABILITY: Tracing — config and span logic in observability/tracing/result-tracing.js ===
-const { traceClientConnected, traceScoresUpdated } = require('./tracing');
+const { traceScoresUpdated } = require('./tracing');
 
 var express = require('express'),
     async = require('async'),
@@ -12,9 +12,6 @@ var express = require('express'),
 var port = process.env.PORT || 4000;
 
 io.on('connection', function (socket) {
-
-  // === OBSERVABILITY: Trace new client connection to result page ===
-  traceClientConnected(socket.id);
 
   socket.emit('message', { text : 'Welcome!' });
 

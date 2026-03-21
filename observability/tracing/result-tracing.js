@@ -14,13 +14,6 @@ const sdk = new NodeSDK({
 
 sdk.start();
 
-/** Trace when a new client connects to the result page */
-function traceClientConnected(socketId) {
-  const span = trace.getTracer('result-service').startSpan('client-connected');
-  span.setAttribute('socket.id', socketId);
-  span.end();
-}
-
 /** Trace when vote scores change — with child span for the broadcast to clients */
 function traceScoresUpdated(cats, dogs, emitFn) {
   const tracer = trace.getTracer('result-service');
@@ -38,4 +31,4 @@ function traceScoresUpdated(cats, dogs, emitFn) {
   parentSpan.end();
 }
 
-module.exports = { traceClientConnected, traceScoresUpdated };
+module.exports = { traceScoresUpdated };
