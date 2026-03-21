@@ -9,10 +9,11 @@ const sdk = new NodeSDK({
   }),
   instrumentations: [
     getNodeAutoInstrumentations({
-      // Disable fs instrumentation — generates too much noise (realpathSync, readFileSync)
+      // Disable noisy instrumentations — only keep HTTP (express) for meaningful traces
       '@opentelemetry/instrumentation-fs': { enabled: false },
-      // Disable pg instrumentation — result polls DB every second, generates thousands of spans
       '@opentelemetry/instrumentation-pg': { enabled: false },
+      '@opentelemetry/instrumentation-dns': { enabled: false },
+      '@opentelemetry/instrumentation-net': { enabled: false },
     }),
   ],
 });
