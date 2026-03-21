@@ -7,7 +7,12 @@ const sdk = new NodeSDK({
   traceExporter: new OTLPTraceExporter({
     url: 'http://otel-collector:4318/v1/traces',
   }),
-  instrumentations: [getNodeAutoInstrumentations()],
+  instrumentations: [
+    getNodeAutoInstrumentations({
+      // Disable fs instrumentation — generates too much noise (realpathSync, readFileSync)
+      '@opentelemetry/instrumentation-fs': { enabled: false },
+    }),
+  ],
 });
 
 sdk.start();

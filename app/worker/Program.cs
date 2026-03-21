@@ -69,15 +69,25 @@ namespace Worker
                         activity?.SetTag("vote", vote.vote);
                         activity?.SetTag("voter_id", vote.voter_id);
 
-                        // Reconnect DB if down
-                        if (!pgsql.State.Equals(System.Data.ConnectionState.Open))
+                        try
                         {
-                            Console.WriteLine("Reconnecting DB");
-                            pgsql = OpenDbConnection("Server=db;Username=postgres;Password=postgres;");
+                            // Reconnect DB if down
+                            if (!pgsql.State.Equals(System.Data.ConnectionState.Open))
+                            {
+                                Console.WriteLine("Reconnecting DB");
+                                pgsql = OpenDbConnection("Server=db;Username=postgres;Password=postgres;");
+                            }
+                            else
+                            { // Normal +1 vote requested
+                                UpdateVote(pgsql, vote.voter_id, vote.vote);
+                            }
                         }
-                        else
-                        { // Normal +1 vote requested
-                            UpdateVote(pgsql, vote.voter_id, vote.vote);
+                        catch (Exception ex)
+                        {
+                            // === OBSERVABILITY: Mark span as error so it appears in Jaeger error filter ===
+                            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                            activity?.RecordException(ex);
+                            throw;
                         }
                     }
                     else

@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, make_response, g
 from redis import Redis
 from opentelemetry import trace
-from tracing import init_tracing
+from tracing import init_tracing, add_vote_attributes, record_exception
 import os
 import socket
 import random
@@ -33,11 +33,16 @@ def hello():
     vote = None
 
     if request.method == 'POST':
-        redis = get_redis()
-        vote = request.form['vote']
-        app.logger.info('Received vote for %s', vote)
-        data = json.dumps({'voter_id': voter_id, 'vote': vote})
-        redis.rpush('votes', data)
+        try:
+            redis = get_redis()
+            vote = request.form['vote']
+            app.logger.info('Received vote for %s', vote)
+            data = json.dumps({'voter_id': voter_id, 'vote': vote})
+            redis.rpush('votes', data)
+            add_vote_attributes(trace.get_current_span(), vote, voter_id)
+        except Exception as exc:
+            record_exception(trace.get_current_span(), exc)
+            raise
 
     resp = make_response(render_template(
         'index.html',
